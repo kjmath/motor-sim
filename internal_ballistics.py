@@ -12,7 +12,7 @@ rho_a = 1.204 # standard density of air, [units: kg/m^3]
 M_a_recip = 1 / 2900 # standard molar mass reciprical of air, [units: mol/ kg]
 
 # initial conditions
-T_0 = 2200 # [units: K]
+T_0 = T_a # [units: K]
 c_p_c_0 = 1004 # [units: J/kg-K]
 M_c_recip_0 = M_a_recip # [units: mol/kg]
 V_c_0 = 4e-6 # [units: m^3}]
@@ -58,11 +58,11 @@ def internal_ballistics(y, t):
 
     dm_c_dt = m_dot_prop - m_dot_out
 
-    dT_c_dt = 0 # ((T_prop - T_c) * c_p_prop * m_dot_prop) / (c_p_c * m_c)
+    dT_c_dt = ((T_prop - T_c) * c_p_prop * m_dot_prop) / (c_p_c * m_c)
 
-    dc_p_c_dt = 0 # (c_p_prop - c_p_c) * m_dot_prop / m_c
+    dc_p_c_dt = (c_p_prop - c_p_c) * m_dot_prop / m_c
 
-    dM_c_recip_dt = 0 #(M_prop_recip - M_c_recip) * m_dot_prop / m_c
+    dM_c_recip_dt = (M_prop_recip - M_c_recip) * m_dot_prop / m_c
 
     dR_c_dt = R_univ * dM_c_recip_dt
 
@@ -81,6 +81,8 @@ t_end = 0.005
 t = np.linspace(0, t_end, 100)
 
 sol = odeint(internal_ballistics, y0, t)
+
+print(sol[0,4])
 
 plt.plot(t, sol[:, 4])
 plt.show()
