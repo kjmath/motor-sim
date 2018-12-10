@@ -1,10 +1,11 @@
-from scipy.integrate import odeint
+from scipy.integrate import odeint, solve_ivp
 import matplotlib.pyplot as plt
 import math
 import numpy as np
 import tools
 from prop_cross_sections import A_b
 from prop_burn_rates import prop_values
+from numerical_solvers import rk4, adams_bashforth, forward_euler
 
 # constants
 R_univ = 8.314
@@ -95,13 +96,20 @@ def internal_ballistics(y, t):
 
 y0 = [T_0, c_p_c_0, M_c_recip_0, m_c_0, p_c_0, V_c_0, x_c_0, R_c_0, gamma_c_0]
 
-t_end = 150
+def main():
 
-t = np.linspace(0, t_end, 100000)
+    t_end = 160
+    time_step = 1e-3
 
-sol = odeint(internal_ballistics, y0, t)
+    t = np.linspace(0, t_end, t_end/time_step + 1)
 
-print(sol[-1,6])
+    sol = odeint(internal_ballistics, y0, t)
+    # sol = odeint(internal_ballistics, [0, 160], y0)
 
-plt.plot(t, sol[:, 4])
-plt.show()
+    print(sol[-1,4])
+
+    plt.plot(t, sol[:, 4])
+    plt.show()
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,51 @@
+\documentclass[12pt, letterpaper, twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{inputenc}
+\usepackage{geometry}
+ 
+\title{18.0851 Final Project: Internal Ballistics Simulations for an End-Burning Solid Rocket Motor}
+
+\author{Kelly Mathesius}
+\date{12 December 2018}
+ 
+\begin{document}
+ 
+ \maketitle
+ 
+\section{Introduction}
+
+Internal ballistics models for solid rocket motors are useful tools for predicting the pressure, temperature, and other parameters within the combustion chamber of a solid rocket motor. Steady state values for internal temperature and pressure can be determined analytically (and with decent accuracy) using basic principles and thermodynamics. However, if one wants to investigate the startup-transient of a motor, or if certain parameters of the solid rocket motor vary throughout the burn, then solving for a single steady-state solution is not as productive.
+
+For my research, I work on the Firefly project, which is a high-speed drone that is powered by a long-endurance end-burning solid rocket motor. This motor has a relatively long startup transient (the slow-burning propellant formulation requires several seconds to properly ignite and achieve sustained burning after ignition), and additionally has varying propellant cross-sectional area and propellant formulation throughout the burn. A full internal ballistics model is a useful tool for predicting thrust and motor performance during the startup transient and throughout the duration of the burn (where burn area and propellant formulation are changing). 
+
+For this project, I determined a system of governing differential equations that describe the behavior of the solid rocket motor, determined appropriate initial values for each equation in the system, evaluated the system using several different integration schemes, and analyzed stability and error for each scheme.
+
+\section{Project Firefly}
+
+\section{Derivation of Equations and Initial Values}
+
+I am primarily interested in determining the chamber pressure of the motor at all points in time, since this enables the calculation of thrust and flight profile for the Firefly vehicle. To determine the chamber pressure of the motor, we can start with the ideal gas law:
+
+\begin{equation}
+  p = \rho R T = \frac{m}{V} R T
+\end{equation}
+
+If we take the derivative of this expressions, we find the following differential equation:
+
+\begin{equation}
+  \frac{dp}{dt} = \frac{R T}{V} \frac{dm}{dt} - \frac{R T m}{V^2} \frac{dV}{dt} + \frac{m R}{V} \frac{dT}{dt} + \frac{m T}{V} \frac{dR}{dT}
+\end{equation}
+
+We now determine expressions for each of these derivatives and their dependencies. To determine the mass derivative $\frac{dm}{dt}$, we consider the free volume inside the combustion chamber, and the masses moving in and out of this volume. 
+
+
+
+\section{Results}
+
+\section{Analysis}
+ 
+\end{document}

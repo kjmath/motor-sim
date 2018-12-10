@@ -18,6 +18,9 @@ def prop_values(x_c):
     x_test = x_c * 1000
 
     a_test = 0
+    temp_test = 0
+    spec_heat_test = 0
+    mol_mass_recip_test = 0
 
     for index in range(len(prop_boundaries) - 1):
         if prop_boundaries[index] <= x_test  and x_test < prop_boundaries[index + 1]:

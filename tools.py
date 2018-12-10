@@ -33,6 +33,8 @@ def mass_flow_subsonic_exit(gamma, m_molar, p_a, p_c, T_c, A_e):
         scalar: Mass flow through the nozzle [units: kg second**-1].
         """
     R = R_univ/m_molar
+    if p_c < p_a:
+        p_c = p_a
     M = mach_from_pr(p_c, p_a, gamma) # Mach number at exit
     return A_e*p_c*(gamma/(R*T_c))**(0.5)*M*(1.+(gamma-1.)/2.*M**2.)**(-(gamma+1.)/(2.*(gamma-1.)))
 

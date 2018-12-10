@@ -13,7 +13,7 @@ def A_b(x_c):
         A_b: burn area [units: m]"""
 
     x_test = x_c * 1000.
-    area_test = np.interp(x_test, x, area)
+    area_test = np.interp(x_test, x, area, left=0, right=0)
 
     return area_test * 1e-6
 
