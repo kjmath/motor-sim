@@ -68,6 +68,8 @@ def is_choked(gamma, m_molar, p_a, p_c, T_c, A_e, A_t):
 
     p_critical = fsolve(equate_mass_flow, 5*p_a)
 
+    if p_c < p_a:
+        p_c = p_a
     return p_c >= p_critical[0]
 
 def p_critical(gamma, m_molar, p_a, p_c, T_c, A_e, A_t):

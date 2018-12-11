@@ -2,6 +2,8 @@ from scipy.integrate import odeint, solve_ivp
 import matplotlib.pyplot as plt
 import math
 import numpy as np
+import os.path
+
 import tools
 from prop_cross_sections import A_b
 from prop_burn_rates import prop_values
@@ -18,7 +20,7 @@ M_a_recip = 1 / 0.029 # standard molar mass reciprical of air, [units: mol/ kg]
 T_0 = T_a # [units: K]
 c_p_c_0 = 1004 # [units: J/kg-K]
 M_c_recip_0 = M_a_recip # [units: mol/kg]
-V_c_0 = 3e-6 # [units: m^3}]
+V_c_0 = 3e-6 # [units: m^3]
 m_c_0 = rho_a * V_c_0 # [units: kg]
 p_c_0 = p_a # [units: Pa]
 x_c_0 = 0 # [units: m]
@@ -54,6 +56,9 @@ def internal_ballistics(y, t):
 
     dx_c_dt = a * p_c ** n
 
+    if dx_c_dt < 0:
+        dx_c_dt = 0
+
     # print('dx_c_dt: ', str(dx_c_dt * 1000), ' mm/s')
     # print('p_c: ', str(p_c * 1e-6), ' MPa')
 
@@ -78,9 +83,9 @@ def internal_ballistics(y, t):
 
     dm_c_dt = m_dot_prop - m_dot_out
 
-    dT_c_dt = ((T_prop - T_c) * c_p_prop * m_dot_prop) / (c_p_c * m_c)
-
     dc_p_c_dt = (c_p_prop - c_p_c) * m_dot_prop / m_c
+
+    dT_c_dt = ((T_prop * c_p_prop - T_c * c_p_c) * m_dot_prop) / (c_p_c * m_c)
 
     dM_c_recip_dt = (M_prop_recip - M_c_recip) * m_dot_prop / m_c
 
@@ -98,17 +103,41 @@ y0 = [T_0, c_p_c_0, M_c_recip_0, m_c_0, p_c_0, V_c_0, x_c_0, R_c_0, gamma_c_0]
 
 def main():
 
-    t_end = 160
-    time_step = 1e-3
+    t_end = 158
+    solvers = [forward_euler, adams_bashforth, rk4]
+    time_steps = [1e-4, 1e-4, 1e-4]
 
-    t = np.linspace(0, t_end, t_end/time_step + 1)
+    f_pres = plt.figure()
+    f_x = plt.figure()
+    ax_pres = f_pres.add_subplot(111)
+    ax_x = f_x.add_subplot(111)
 
-    sol = odeint(internal_ballistics, y0, t)
-    # sol = odeint(internal_ballistics, [0, 160], y0)
+    ax_list = [ax_pres, ax_x]
 
-    print(sol[-1,4])
+    for index in range(len(solvers)):
 
-    plt.plot(t, sol[:, 4])
+        solver = solvers[index]
+        time_step = time_steps[index]
+        t = np.arange(0, t_end, time_step)
+        sol = solver(internal_ballistics, y0, t)
+
+        p_c = sol[:, 4] * 1e-6
+        x_c = sol[:, 6] * 1e3
+
+        ax_pres.plot(t, p_c, dashes=[3, 4])
+        ax_x.plot(t, x_c, dashes=[3, 4])
+
+
+    for ax in ax_list:
+        ax.legend(['Forward Euler','Adams-Bathforth','Runge-Kutta'])
+        ax.set_xlabel('Time (s)')
+
+    ax_x.set_ylabel('Burn Distance [mm]')
+    ax_pres.set_ylabel('Chamber Pressure [MPa]')
+
+    f_pres.savefig(os.path.join('figures', 'chamber_pressure_compare.png'))
+    f_x.savefig(os.path.join('figures', 'burn_dist_compare.png'))
+
     plt.show()
 
 if __name__ == '__main__':
