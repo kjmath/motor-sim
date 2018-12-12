@@ -24,7 +24,7 @@ Internal ballistics models for solid rocket motors are useful tools for predicti
 
 For my research, I work on the Firefly project, which is a high-speed drone that is powered by a long-endurance end-burning solid rocket motor. This motor has a relatively long startup transient (the slow-burning propellant formulation requires several seconds to properly ignite and achieve sustained burning after ignition), and additionally has varying propellant cross-sectional area and propellant formulation throughout the burn. A full internal ballistics model is a useful tool for predicting thrust and motor performance during the startup transient and throughout the duration of the burn (where burn area and propellant formulation are changing). 
 
-For this project, I determined a system of governing differential equations that describe the behavior of the solid rocket motor, determined appropriate initial values for each equation in the system, evaluated the system using several different integration schemes, and analyzed stability and error for each scheme.
+For this project, I determined a system of governing differential equations that describe the behavior of the solid rocket motor, determined appropriate initial values for each equation in the system, evaluated the system using several different integration schemes, and analyzed stability and error for each scheme. The simulator and solver were implemented in Python. All my code for this project can be found on my Github: https://github.mit.edu/kjmath/18.0851-final-project
 
 \section{Firefly Vehicle}
 
@@ -252,7 +252,7 @@ The first three time-steps were found using the previously described Runge-Kutta
 
 \section{Results}
 
-Plots of chamber pressure and burn distance versus time are given in Figure \ref{fig:chamber_pressure_compare}. We see decent agreement between the different solvers. 
+Plots of chamber pressure and burn distance versus time are given in Figure \ref{fig:chamber_pressure_compare}. A time step of $\Delta t = 10^{-4}$ was used for all methods (this step size was chosen to ensure stability for all methods). We see decent agreement between the different solvers. 
 
 \begin{figure}
     \centering
@@ -261,7 +261,26 @@ Plots of chamber pressure and burn distance versus time are given in Figure \ref
     \caption{\label{fig:chamber_pressure_compare} Plots of chamber pressure and burn distance for different solvers.}
 \end{figure}
 
+Besides good agreement, the results are also very reasonable. We see the burning distance start at 0mm at time 0, and monotonically increase to 380mm. This is exactly what we should expect from a 380mm long end-burning motor. The chamber pressure curve is also very reasonable. We see sharp peaks in the curve that correspond to instances where the propellant formulation changes in the motor. We see shallower corners at locations corresponding to points in the linear interpolation of the burn area of the motor. Furthermore, the chamber pressure values themselves are reasonable. Steady state calculations predict chamber pressures between 0.4 and 0.6 MPa, and the chamber pressures plots are very much in agreement with this. 
 
 \section{Analysis}
+
+This section will include a brief analysis of the stability and accuracy of these methods. 
+
+\subsection{Stability and Accuracy Analysis} 
+
+Because of the nonlinearity of the system of differential equations, determining stability and required time steps is not straight forward. Rather than linearize the complicated system to determine eigenvalues and stability boundaries, I simply iterated through different time step values for each method to find the stability boundaries. I determined the following maximum time step values to three significant figures: 
+
+\begin{tabular}{ c c }
+ Forward Euler & $1.06*10^{-3}$ s \\ 
+ Adams-Bashforth & $1.09*10^{-4}$ s \\  
+ Runge-Kutta & $7.42*10^{-4}$ s    
+\end{tabular}
+
+Adams-Bashforth requires nearly an order of magnitude smaller time step than Forward Euler to be stable. However the Forward Euler method is only first order accurate, and therefore we expect larger errors for the same time step size. The implemented Adams-Bashforth and Runge-Kutta methods are each fourth order accurate. Since Runge-Kutta can tolerate a much larger time step (and can therefore have a much shorter computation time) and still maintain stability, it is perhaps a better method choice for this system of equations. 
+
+\subsection{Future Work} 
+
+Future work could be done in simplifying and combining several of the governing equations to reduce the number of calculations required for the numerical solvers. Additionally, other solvers, including implicit solvers with a predictor-corrector method or a Newton loop, could be implemented to achieve greater accuracy while maintaining stability for a larger time step. 
  
 \end{document}

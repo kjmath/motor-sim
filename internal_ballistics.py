@@ -56,8 +56,8 @@ def internal_ballistics(y, t):
 
     dx_c_dt = a * p_c ** n
 
-    if dx_c_dt < 0:
-        dx_c_dt = 0
+    """if dx_c_dt < 0:
+        dx_c_dt = 0"""
 
     # print('dx_c_dt: ', str(dx_c_dt * 1000), ' mm/s')
     # print('p_c: ', str(p_c * 1e-6), ' MPa')
@@ -137,6 +137,44 @@ def main():
 
     f_pres.savefig(os.path.join('figures', 'chamber_pressure_compare.png'))
     f_x.savefig(os.path.join('figures', 'burn_dist_compare.png'))
+
+    plt.show()
+
+def test():
+    t_end = 158
+    solvers = [forward_euler, adams_bashforth, rk4]
+    time_steps = [1.06e-3, 1.09e-4, 7.42e-4]
+
+    f_pres = plt.figure()
+    f_x = plt.figure()
+    ax_pres = f_pres.add_subplot(111)
+    ax_x = f_x.add_subplot(111)
+
+    ax_list = [ax_pres, ax_x]
+
+    for index in range(len(solvers)):
+
+        solver = solvers[index]
+        time_step = time_steps[index]
+        t = np.arange(0, t_end, time_step)
+        sol = solver(internal_ballistics, y0, t)
+
+        p_c = sol[:, 4] * 1e-6
+        x_c = sol[:, 6] * 1e3
+
+        ax_pres.plot(t, p_c, dashes=[3, 4])
+        ax_x.plot(t, x_c, dashes=[3, 4])
+
+
+    for ax in ax_list:
+        ax.legend(['Forward Euler','Adams-Bathforth','Runge-Kutta'])
+        ax.set_xlabel('Time (s)')
+
+    ax_x.set_ylabel('Burn Distance [mm]')
+    ax_pres.set_ylabel('Chamber Pressure [MPa]')
+
+    f_pres.savefig(os.path.join('figures', 'chamber_pressure_compare_barely_stable.png'))
+    f_x.savefig(os.path.join('figures', 'burn_dist_compare_barely_stable.png'))
 
     plt.show()
 
