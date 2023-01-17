@@ -54,7 +54,8 @@ def internal_ballistics(y, t):
             x_c: burn back distance, [m]
             R_c: specific gas constant, [J kg**-1 K**-1]
             gamma_c: ratio of heat capacities in the chamber, [-]
-        t: time [s]
+        t: time [s] (not actually used, but needed for comparing with scipy
+            integration schemes)
 
     Returns:
         derivative of state vector w.r.t. time
