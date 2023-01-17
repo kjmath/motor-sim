@@ -41,7 +41,26 @@ n = 0.45 # make n = n(x_c)
 # M_prop_recip = M_a_recip # make M_prop_recip = M_prop_recip(x_c)
 
 def internal_ballistics(y, t):
+    """Internal ballistics governing equations.
 
+    Args:
+        y: state vector, with the following parameters:
+            T_c: chamber temperature [K]
+            c_p_c: specific heat capacity of chamber, [J kg**-1 K**-1]
+            M_c_recip: reciprocal of the molecular weight, [mol kg**-1]
+            m_c: mass of gas in chamber, [kg]
+            p_c: pressure in chamber, [Pa]
+            V_c: volume of gas in chamber, [m**3]
+            x_c: burn back distance, [m]
+            R_c: specific gas constant, [J kg**-1 K**-1]
+            gamma_c: ratio of heat capacities in the chamber, [-]
+        t: time [s]
+
+    Returns:
+        derivative of state vector w.r.t. time
+    """
+
+    # unpack state vector
     T_c, c_p_c, M_c_recip, m_c, p_c, V_c, x_c, R_c, gamma_c = y
 
     print('x_c: ', str(x_c * 1000), ' mm')
@@ -50,10 +69,12 @@ def internal_ballistics(y, t):
 
     # dx_c_dt = a * p_c ** n # 
 
+    # get propellant combustion values
     [a, T_prop, c_p_prop, M_prop_recip] = prop_values(x_c)
 
     # print(prop_values(x_c))
 
+    # calculate rate of regression
     dx_c_dt = a * p_c ** n
 
     """if dx_c_dt < 0:
@@ -64,37 +85,37 @@ def internal_ballistics(y, t):
 
     # print(dx_c_dt)
 
+    # calculate volume change in chamber
     dV_c_dt = dx_c_dt * A_b(x_c)
 
     # print('Burn area: ', str(A_b(x_c)))
 
+    # calculate mass flow based on flow chocking criteria
     if tools.is_choked(gamma_c, 1/M_c_recip, p_a, p_c, T_c, A_e, A_t):
         m_dot_out = tools.mass_flow_choked(A_t, p_c, T_c, gamma_c, 1/M_c_recip)
     else:
         m_dot_out = tools.mass_flow_subsonic_exit(gamma_c, 1/M_c_recip, p_a, p_c, T_c, A_e)
         # print('not choked')
 
+    # enforce no negative mass flow
     if m_dot_out < 0:
         m_dot_out = 0
 
+    # calculate mass flow rate of propellant
     m_dot_prop = rho_p * dV_c_dt
 
     # print(str(m_dot_prop), ' - ', str(m_dot_out))
 
+    # calculate state vecotr derivatives based on proportionality arguments
     dm_c_dt = m_dot_prop - m_dot_out
-
     dc_p_c_dt = (c_p_prop - c_p_c) * m_dot_prop / m_c
-
     dT_c_dt = ((T_prop * c_p_prop - T_c * c_p_c) * m_dot_prop) / (c_p_c * m_c)
-
     dM_c_recip_dt = (M_prop_recip - M_c_recip) * m_dot_prop / m_c
-
     dR_c_dt = R_univ * dM_c_recip_dt
-
     dgamma_c_dt = ((c_p_c - R_c) * dc_p_c_dt - c_p_c * (dc_p_c_dt - dR_c_dt)) / (c_p_c - R_c) ** 2
-
     dp_c_dt = (R_c * T_c / V_c) * dm_c_dt - (m_c * R_c * T_c / V_c ** 2) * dV_c_dt + (m_c * T_c / V_c) * dR_c_dt + (m_c * R_c / V_c) * dT_c_dt
 
+    # assemble derivative of state vector
     dydt = [dT_c_dt, dc_p_c_dt, dM_c_recip_dt, dm_c_dt, dp_c_dt, dV_c_dt, dx_c_dt, dR_c_dt, dgamma_c_dt]
 
     return dydt
